@@ -151,10 +151,11 @@ sub ColumnTracking
 
 my @head_font =
 	(
-	join ('', qw ( lucida 3 bold roman nounder )), # head0
-	join ('', qw ( lucida 2 bold roman nounder )),
-	join ('', qw ( lucida 1 bold roman nounder )),
-	join ('', qw ( lucida 0 bold roman nounder )),
+	'BAD INDEX INTO @head_font ARRAY',
+	join ('', qw ( lucida 1 bold roman nounder )), # head1 => largest size
+	join ('', qw ( lucida 2 bold roman nounder )), # head2 => middle size
+	join ('', qw ( lucida 3 bold roman nounder )), # head3 => small size
+	join ('', qw ( lucida 4 bold roman nounder )), # normal text
 	);
 
 #######################################################################
@@ -170,7 +171,7 @@ sub FontTracking
 			[
 				{
 				family => 'lucida',	# lucida, courier
-				size => 0,		# 0,1,2,3
+				size => 4,		# 1,2,3,4
 				weight => 'normal',	# normal, bold
 				slant => 'roman', 	# roman, italic
 				underline => 'nounder',	# yesunder, nounder 
@@ -194,23 +195,8 @@ sub FontTracking
 			{
 			my $hindex = $attrs->{_head_index};
 			$newhash{underline}='yesunder';
-			if(0) {}
-			elsif($hindex eq '1')
-				{
-				$newhash{size}='3';
-				$newhash{weight}='bold';
-				}
-			elsif($hindex eq '2')
-				{
-				$newhash{size}='2';
-				$newhash{weight}='bold';
-				}
-			else
-				{
-				$newhash{size}='1';
-				$newhash{weight}='bold';
-				}
-
+			$newhash{size}=$hindex;
+			$newhash{weight}='bold';
 			}
 		elsif($element eq 'I')
 			{ 
@@ -448,7 +434,7 @@ sub end_head
 	$toc->insert('insert', $toc_string);
 	$toc->tagAdd($toc_tag, 'insert linestart', 'insert lineend');
 	$toc->tagBind($toc_tag, '<Button-1>',
-		sub{ warn "AAA";$pod->see($pod->index($header_marker_name)); } );
+		sub{ $pod->see($pod->index($header_marker_name)); } );
 
 	$toc->insert('insert',"\n");
 
@@ -472,7 +458,12 @@ sub end_L
 	$w->tagAdd($tag_name, $start, $end);
 	$w->tagConfigure($tag_name, -foreground=>'blue');
 	$w->tagBind     ($tag_name, '<Button-1>',
-		sub{ $w->see($w->index($link_marker_name)) } );
+		sub{
+			eval{
+				$w->see($w->index($link_marker_name));
+			};
+		} 
+	);
 
 	$w->tagBind($tag_name, '<Enter>',
 		sub{ $w->configure(-cursor=> $parser->{_link_cursor}); } );
@@ -504,7 +495,7 @@ require 5.005_62;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Data::Dumper;
 
@@ -534,20 +525,17 @@ sub ClassInit
 sub set_font_tags
 {
 	# pass in a list of font sizes to correspond to the 4 text sizes
-	# by default, use these values:
-	# $font_size[0]=10
-	# $font_size[1]=12
-	# $font_size[2]=16
-	# $font_size[3]=18
-	
-	my ($pod, @font_sizes)=@_; # 
+	# by default, use these values:	
+	my ($self, @font_sizes)=@_; # 
+
+	my $pod = $self->Subwidget('pod');
 
 	unless(scalar(@font_sizes))
 		{
-		@font_sizes= qw( 10 12 16 18 );
+		@font_sizes= qw( 18 16 12 10 );
 		}
 
-
+	unshift(@font_sizes, 'EMTPY');
 
  	for(my $i=0; $i<100; $i++)
 		{
@@ -567,7 +555,7 @@ sub set_font_tags
 
 for my $family qw(lucida courier)
 	{
-	for my $relative_size qw ( 0 1 2 3 )
+	for my $relative_size qw ( 1 2 3 4 )
 		{
 		my $font_size = $font_sizes[$relative_size];
 
@@ -604,16 +592,16 @@ sub Populate
 
 	$self->SUPER::Populate($args);
 
-	my $toc = $self->ROText
-			->pack(-side=> 'left',-fill=>'both');
+	my $toc = $self->ROText( -width => 20 )
+		->pack(-side=> 'left',-fill=>'both');
 	
 	$toc->configure(-wrap=>'none');
 
 	my $adj = $self->Adjuster(-widget=>$toc, -side=>'left')
-			->pack(-side=>'left',-fill=>'y');
+		->pack(-side=>'left',-fill=>'y');
 
-	my $pod = $self->ROText
-			->pack(-side=>'right',-fill=>'both',-expand=>1);
+	my $pod = $self->ROText(-width=>80)
+		->pack(-side=>'right',-fill=>'both',-expand=>1);
 
 	$self->Advertise  (    'toc'=> $toc );
 	$self->Advertise  (    'pod'=> $pod );
@@ -622,7 +610,7 @@ sub Populate
 
 	$self->Delegates  ('podview'=>$self);
 
-	set_font_tags($pod);
+	$self->set_font_tags;
 
 	my $parser = Tk::Peapod::Parser->new();
 	$self->{_parser}= $parser;
