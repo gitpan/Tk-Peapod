@@ -1,0 +1,41 @@
+Tk::Peapod version 0.01
+======================
+
+Tk::Peapod is a Perl/Tk widget for displaying POD 
+in your Perl/Tk applications.
+
+The tarball includes a script called 'peapod',
+which is a simple POD viewer script.
+
+Yes, there are other POD viewers available on CPAN,
+and I recommend you use them for viewing POD.
+Peapod will eventually (hopefully) support some
+features that extends POD beyond its standard definition.
+
+Stay tuned.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  Tk
+  Tk::Pod
+
+COPYRIGHT AND LICENCE
+
+Put the correct copyright and licence information here.
+
+Copyright (C) 2003 Greg London, All Rights Reserved
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
+

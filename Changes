@@ -1,0 +1,11 @@
+Revision history for Perl extension Tk::Peapod.
+
+0.01  Thu Mar 13 22:40:57 2003
+	- original version; created by h2xs 1.22 with options
+		-X -n Tk::Peapod
+	- this is a non-working version.
+	- can view minimal POD documents,
+	- no new functionality added yet.
+
+0.02	- links are blue and cause mouse pointer to change to an arrow.
+	- clicking an internal link actually goes to that part of document.
