@@ -9,3 +9,14 @@ Revision history for Perl extension Tk::Peapod.
 
 0.02	- links are blue and cause mouse pointer to change to an arrow.
 	- clicking an internal link actually goes to that part of document.
+
+0.04	- Generate Table of Contents based on =head1, etc headers
+	-	make TOC have subparagraphs, such as 3.2.4 and similar
+	- Insert TOC numbers in POD view so a printout of TOC and POD
+	-	would actually be something semi-useful.
+	- Redesign widget as a composite widget of 2 ROText in a frame
+	-	separated by an Adjuster widget.
+	- Left ROText will eventually hold TOC
+	- Right TOText holds POD viewer.
+	- saving now because finally got the composite widget to work right.
+	-	it wasn't easy, and it'll probably get massaged in future.

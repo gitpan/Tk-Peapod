@@ -15,9 +15,9 @@ use Tk::Peapod;
 
 my $top = MainWindow->new();
 
-my $text_frame = $top->Frame->pack
+my $peapod_frame = $top->Frame->pack
 	(-anchor=>'nw', expand=>'yes', -fill => 'both'); # autosizing
-my $counter_frame = $top->Frame->pack(-anchor=>'nw');
+
 
 ##############################################
 ##############################################
@@ -30,7 +30,7 @@ my $counter_frame = $top->Frame->pack(-anchor=>'nw');
 ## the text frame and the text window in the frame are both 
 ## set up for autosizing.
 
-my $textwindow = $text_frame->Scrolled(
+my $peapod = $peapod_frame->Scrolled(
 	'Peapod',
 	exportselection => 'true',  # 'sel' tag is associated with selections
 	# initial height, if it isnt 1, then autosizing fails 
@@ -54,7 +54,8 @@ $top->geometry("80x24");
 {
 	local $/;
 	my $string = <>;
-	$textwindow->podview($string);
+	$peapod->podview($string);
 }
 
 MainLoop();
+

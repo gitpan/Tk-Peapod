@@ -1,11 +1,12 @@
 Changes
 Makefile.PL
 MANIFEST
-peapod
 Peapod.pm
 README
 t/1.t
 t/master.pod
+t/peapod
 t/sample.pod
 t/simple.pod
 t/test.pod
+

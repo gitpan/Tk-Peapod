@@ -79,8 +79,8 @@ sub _handle_text
 	my $tag = $parser->CurrentTag;
 	my $font = $parser->CurrentFont;
 
-	$parser->{_widget}->insert('insert', $text, $font);
-	$parser->{_widget}->tagAdd
+	$parser->{_pod_widget}->insert('insert', $text, $font);
+	$parser->{_pod_widget}->tagAdd
 		($tag, 'insert linestart', 'insert lineend');
 
 }
@@ -145,6 +145,20 @@ sub ColumnTracking
 
 
 #######################################################################
+#######################################################################
+
+#	my $font = $family.$size.$weight.$slant.$under;
+
+my @head_font =
+	(
+	join ('', qw ( lucida 24 bold roman nounder )), # head0
+	join ('', qw ( lucida 18 bold roman nounder )),
+	join ('', qw ( lucida 12 bold roman nounder )),
+	join ('', qw ( lucida 10 bold roman nounder )),
+	);
+
+#######################################################################
+#######################################################################
 sub FontTracking
 {
 	my $parser=shift(@_);
@@ -177,7 +191,7 @@ sub FontTracking
 			$newhash{family}='courier';
 			}
 		elsif($element eq 'head')
-			{ 
+			{
 			my $hindex = $attrs->{_head_index};
 			$newhash{underline}='yesunder';
 			if(0) {}
@@ -231,6 +245,8 @@ sub _handle_element_start_and_end
 	$element =~ s{\W}{_}g;
 	my $attrs = shift(@_);
 
+	my $w=$parser->{_pod_widget};
+
 	my $mark = $parser->next_marker($startend .'_'.$element);
 	$attrs->{_marker}=$mark;
 
@@ -249,11 +265,11 @@ sub _handle_element_start_and_end
 
 	if($start_new_line_for_element{$element})
 		{
-		$parser->{_widget}->insert('insert',"\n");
+		$w->insert('insert',"\n");
 		}
 
-	$parser->{_widget}->markSet($mark, 'insert');
-	$parser->{_widget}->markGravity($mark, 'left');
+	$w->markSet($mark, 'insert');
+	$w->markGravity($mark, 'left');
 
  	$parser->ColumnTracking($startend , $element, $attrs);
  	$parser->FontTracking  ($startend , $element, $attrs);
@@ -298,7 +314,7 @@ sub get_text_between_start_end_markers
 {
 	my $parser=shift(@_);
 
-	my $w=$parser->{_widget};
+	my $w=$parser->{_pod_widget};
 
 	my $attrs = shift(@_);
 	my $end_marker = $attrs->{_marker};
@@ -313,14 +329,44 @@ sub get_text_between_start_end_markers
 	return ($start_index,$end_index,$text);
 }
 
+#######################################################################
+#######################################################################
+#######################################################################
+#######################################################################
+
 my $marker_prefix='MARKER:';
 
 my @index_items;
 
-sub add_to_index
+#######################################################################
+sub label_most_recent_section
+#######################################################################
 {
-	my ($entry,$marker,$depth)=@_;
-	my $ref=
+	my ($href)=@_;
+
+	my $temp_ref = \@index_items;
+	my @section_number;
+
+	while(1)
+		{
+		push(@section_number, scalar(@$temp_ref));
+		$temp_ref = $temp_ref->[-1]->{Subparagraph};
+		last unless(scalar( @$temp_ref ));
+		}
+
+	my $section_string = join('.', @section_number) . ': ';
+
+	$href -> {Section}=$section_string;
+
+	return $section_string;
+}
+
+#######################################################################
+sub add_to_table_of_contents
+#######################################################################
+{
+	my ($parser, $entry,$marker,$depth)=@_;
+	my $href=
 		{
 		# text for index entry. ex: "Using Array Refs"
 		Entry=>$entry,
@@ -333,24 +379,65 @@ sub add_to_index
 		# 2 = sub level entry
 		# 3 = sub sub level entry, etc.
 		Depth=>$depth,
+
+		Subparagraph => [],
 		};
 
-	push(@index_items,$ref);
+	
+	###############################################################
+	# first, figure out where to put the $href entry...
+	###############################################################
+
+	my $arr_ref = \@index_items;
+
+	for(my $cnt=1; $cnt<$depth; $cnt++)
+		{
+		unless(scalar(@$arr_ref))
+			{
+			my $href = 
+				{ 
+				Entry=>'WARN: skipped this paragraph',
+				Subparagraph=>[],
+				};
+
+			push(@$arr_ref, $href);
+
+			label_most_recent_section($href);
+			}
+
+		$arr_ref = $arr_ref->[-1]->{Subparagraph};
+		}
+
+	push(@$arr_ref,$href);
+
+
+	###############################################################
+	# now go back and label the last href with the proper section number
+	###############################################################
+	my $section_string = label_most_recent_section($href);
+	my $w=$parser->{_pod_widget};
+	my $index = $w->index($marker);
+	$w->insert($index, $section_string, $head_font[$depth] );
 }
 
+
+#######################################################################
 sub end_head
+#######################################################################
 {
 	my $parser=shift(@_);
 	my $level=$_[0]->{'_head_index'};
 	my ($start,$end,$text) = 
 		$parser->get_text_between_start_end_markers(@_);
 	my $header_marker_name = $marker_prefix.$text;
-	$parser->{_widget}->markSet($header_marker_name,$start);
+	$parser->{_pod_widget}->markSet($header_marker_name,$start);
 
-	add_to_index($text,$header_marker_name,$level);
+	add_to_table_of_contents($parser, $text,$header_marker_name,$level);
 }
 
+#######################################################################
 sub end_L
+#######################################################################
 {
 	my $parser=shift(@_);
 	my ($start,$end,$text) = 
@@ -362,7 +449,7 @@ sub end_L
 	my $link_marker_name = $marker_prefix.$text;
 	my $tag_name = 'link_'.$start.'_'.$end.'_'.$link_marker_name;
 
-	my $w=$parser->{_widget};
+	my $w=$parser->{_pod_widget};
 	$w->tagAdd($tag_name, $start, $end);
 	$w->tagConfigure($tag_name, -foreground=>'blue');
 	$w->tagBind     ($tag_name, '<Button-1>',
@@ -374,13 +461,15 @@ sub end_L
 		sub{ $w->configure(-cursor=> $parser->{_text_cursor}); } );
 }
 
+#######################################################################
 sub start_item_bullet
+#######################################################################
 {
 	my $parser=shift(@_);
 	my $attrs=shift(@_);
 	my $bullet_string = $attrs->{'~orig_content'};
 	$bullet_string .= ' ';
-	$parser->{_widget}->insert('insert', $bullet_string );
+	$parser->{_pod_widget}->insert('insert', $bullet_string );
 
 }
 
@@ -396,58 +485,71 @@ require 5.005_62;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.04';
 
 use Data::Dumper;
 
 use Tk qw (Ev);
+use Tk::ROText;
+use Tk::Adjuster;
 
 use  Pod::Simple::Methody;
-use base qw(Tk::ROText);
+
+use base qw(Tk::Frame);
 
 Construct Tk::Widget 'Peapod';
 
 #######################################################################
 #######################################################################
 sub ClassInit
-{
+{ 
  my ($class,$mw) = @_;
  $class->SUPER::ClassInit($mw);
 
  $mw->bind($class,'<F1>', 'DumpMarks'); 
  $mw->bind($class,'<F2>', 'DumpTags'); 
  $mw->bind($class,'<F3>', 'DumpCursor'); 
-
 }
 
-#######################################################################
-#######################################################################
-sub InitObject
+sub Populate
 {
- my ($w) = @_;
- $w->SUPER::InitObject;
+	my($self, $args)=@_;
 
- my $parser = Tk::Peapod::Parser->new();
- $w->{_parser}= $parser;
- $parser->{_widget}=$w;
+	$self->SUPER::Populate($args);
 
- $w->configure(-cursor=>$parser->{_text_cursor});
+	my $toc = $self->ROText
+			->pack(-side=> 'left',-fill=>'both');
 
- for(my $i=0; $i<100; $i++)
-	{
-	 $w->tagConfigure
-		(
-			'Column'.$i,
- 			-lmargin1 => $i*8,
-			-lmargin2 => $i*8,
-		);
-	}
+	my $adj = $self->Adjuster(-widget=>$toc, -side=>'left')
+			->pack(-side=>'left',-fill=>'y');
 
-# family    =>  garamond, courier
-# size 	    =>  10, 12, 16, 18, 24
-# weight    =>  normal, bold
-# slant     =>  roman, italic
-# underline =>  yesunder, nounder
+	my $pod = $self->ROText
+			->pack(-side=>'right',-fill=>'both',-expand=>1);
+
+	$self->Advertise  (    'toc'=> $toc );
+	$self->Advertise  (    'pod'=> $pod );
+	$self->ConfigSpecs('DEFAULT'=>[$pod]);
+	$self->Delegates  ('DEFAULT'=> $pod );
+
+	$self->Delegates  ('podview'=>$self);
+
+	my $w=$pod;
+
+ 	for(my $i=0; $i<100; $i++)
+		{
+		 $w->tagConfigure
+			(
+				'Column'.$i,
+	 			-lmargin1 => $i*8,
+				-lmargin2 => $i*8,
+			);
+		}
+
+	# family    =>  garamond, courier
+	# size 	    =>  10, 12, 16, 18, 24
+	# weight    =>  normal, bold
+	# slant     =>  roman, italic
+	# underline =>  yesunder, nounder
 
 for my $family qw(lucida courier)
 	{
@@ -478,7 +580,22 @@ for my $family qw(lucida courier)
 		}
 	}
 
+
+	my $parser = Tk::Peapod::Parser->new();
+	$self->{_parser}= $parser;
+	$parser->{_widget}=$self;
+	$parser->{_pod_widget}=$pod;
+	$parser->{_toc_widget}=$toc;
+	
+
+	$w->configure(-cursor=>$parser->{_text_cursor});
+
 }
+
+
+
+
+
 
 #######################################################################
 #######################################################################
@@ -626,5 +743,12 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
 
 =cut
+
+
+
+
+
+
+
 
 

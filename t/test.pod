@@ -1,20 +1,26 @@
-=head1 Bingo
+=head3 this is an initial head 3 header, no head1 or head2 before it.
+
+=head1 this is the first head 1 header
 
 sdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df h sdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df h sdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df h sdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df hsdf and bulkfasd sd f sadf asd fas df sd fsa df as df ad fa sdf as d fas df asd fa sdf as df asd f asd fa sdf sd fa sdf asd f asd ag f hdg ghsgdh h f gh dfgh df gh df gh fdg h df hdf g hdf gh dfg hdfh df h
 
 
-=head2 green eggs
+=head2 this is the first head 2 header
 
 fdd this is a link to L</Bingo>
 
 
-=head3 this is head3 asdf
+=head3 this is head3 aaaa
 
-=head3 this is head3 ss
+=head3 this is head3 bbbb
 
-=head3 this is head3 ddd
+=head3 this is head3 ccc
 
-=head3 this is head3 fff
+=head3 this is head3 dddd
+
+=head2 this is head2 bbb
+
+=head1 this is head1 sdfsdf
 
 
 text above should be script.
@@ -39,7 +45,7 @@ C<this is a big block of code>
 this should be a link L<"green eggs"> to head2
 
 
-=head1 this I< should > be a filename  to junk
+=head1 this I< should > be a filename  to junk  head 1
 
 if ( $a <=> $b ) { print junk }
 
@@ -104,6 +110,9 @@ Description of Bar function
 the end
 
 =cut
+
+
+
 
 
 

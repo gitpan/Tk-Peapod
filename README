@@ -1,4 +1,4 @@
-Tk::Peapod version 0.01
+Tk::Peapod
 ======================
 
 Tk::Peapod is a Perl/Tk widget for displaying POD 
@@ -34,7 +34,7 @@ COPYRIGHT AND LICENCE
 
 Put the correct copyright and licence information here.
 
-Copyright (C) 2003 Greg London, All Rights Reserved
+Copyright (C) 2003 Greg London
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 

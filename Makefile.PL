@@ -5,8 +5,13 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'Tk::Peapod',
     'VERSION_FROM'	=> 'Peapod.pm', # finds $VERSION
-    'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
+    'PREREQ_PM'		=> 
+	{
+	'Tk' => '800.015',
+	'Pod::Simple' => '0.96',
+	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => 'Peapod.pm', # retrieve abstract from module
-       AUTHOR     => 'Greg London <email@greglondon.com>') : ()),
+       AUTHOR     => 'Greg London <DELETEALLCAPSemail@greglondon.com>') : ()),
 );
+
