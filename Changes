@@ -20,3 +20,11 @@ Revision history for Perl extension Tk::Peapod.
 	- Right TOText holds POD viewer.
 	- saving now because finally got the composite widget to work right.
 	-	it wasn't easy, and it'll probably get massaged in future.
+
+0.05	- change absolute font size tag name (12 14 16 18) to a 
+	- relative font size tag name (0 1 2 3)
+	- will be able to keep all tags in place and simply change
+	- the actual font size associated with it to change complete
+	- viewing of POD.
+	- added a binding in TOC so that clicking on an entry in TOC
+	- takes you to that entry in the POD.

@@ -151,10 +151,10 @@ sub ColumnTracking
 
 my @head_font =
 	(
-	join ('', qw ( lucida 24 bold roman nounder )), # head0
-	join ('', qw ( lucida 18 bold roman nounder )),
-	join ('', qw ( lucida 12 bold roman nounder )),
-	join ('', qw ( lucida 10 bold roman nounder )),
+	join ('', qw ( lucida 3 bold roman nounder )), # head0
+	join ('', qw ( lucida 2 bold roman nounder )),
+	join ('', qw ( lucida 1 bold roman nounder )),
+	join ('', qw ( lucida 0 bold roman nounder )),
 	);
 
 #######################################################################
@@ -170,7 +170,7 @@ sub FontTracking
 			[
 				{
 				family => 'lucida',	# lucida, courier
-				size => 10,		# 10, 12, 18, 24
+				size => 0,		# 0,1,2,3
 				weight => 'normal',	# normal, bold
 				slant => 'roman', 	# roman, italic
 				underline => 'nounder',	# yesunder, nounder 
@@ -197,16 +197,17 @@ sub FontTracking
 			if(0) {}
 			elsif($hindex eq '1')
 				{
-				$newhash{size}='18';
+				$newhash{size}='3';
 				$newhash{weight}='bold';
 				}
 			elsif($hindex eq '2')
 				{
-				$newhash{size}='12';
+				$newhash{size}='2';
 				$newhash{weight}='bold';
 				}
 			else
 				{
+				$newhash{size}='1';
 				$newhash{weight}='bold';
 				}
 
@@ -418,6 +419,8 @@ sub add_to_table_of_contents
 	my $w=$parser->{_pod_widget};
 	my $index = $w->index($marker);
 	$w->insert($index, $section_string, $head_font[$depth] );
+
+	return $section_string;
 }
 
 
@@ -432,7 +435,23 @@ sub end_head
 	my $header_marker_name = $marker_prefix.$text;
 	$parser->{_pod_widget}->markSet($header_marker_name,$start);
 
-	add_to_table_of_contents($parser, $text,$header_marker_name,$level);
+	my $index = add_to_table_of_contents($parser, $text,$header_marker_name,$level);
+
+	my $toc=$parser->{_toc_widget};
+	my $pod=$parser->{_pod_widget};
+
+	my $toc_indent = '  'x$level;
+	my $toc_string = $toc_indent.$index.$text;
+
+	my $toc_tag = $header_marker_name;
+
+	$toc->insert('insert', $toc_string);
+	$toc->tagAdd($toc_tag, 'insert linestart', 'insert lineend');
+	$toc->tagBind($toc_tag, '<Button-1>',
+		sub{ warn "AAA";$pod->see($pod->index($header_marker_name)); } );
+
+	$toc->insert('insert',"\n");
+
 }
 
 #######################################################################
@@ -485,7 +504,7 @@ require 5.005_62;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Data::Dumper;
 
@@ -511,6 +530,74 @@ sub ClassInit
  $mw->bind($class,'<F3>', 'DumpCursor'); 
 }
 
+
+sub set_font_tags
+{
+	# pass in a list of font sizes to correspond to the 4 text sizes
+	# by default, use these values:
+	# $font_size[0]=10
+	# $font_size[1]=12
+	# $font_size[2]=16
+	# $font_size[3]=18
+	
+	my ($pod, @font_sizes)=@_; # 
+
+	unless(scalar(@font_sizes))
+		{
+		@font_sizes= qw( 10 12 16 18 );
+		}
+
+
+
+ 	for(my $i=0; $i<100; $i++)
+		{
+		 $pod->tagConfigure
+			(
+				'Column'.$i,
+	 			-lmargin1 => $i*8,
+				-lmargin2 => $i*8,
+			);
+		}
+
+	# family    =>  garamond, courier
+	# size 	    =>  10, 12, 16, 18
+	# weight    =>  normal, bold
+	# slant     =>  roman, italic
+	# underline =>  yesunder, nounder
+
+for my $family qw(lucida courier)
+	{
+	for my $relative_size qw ( 0 1 2 3 )
+		{
+		my $font_size = $font_sizes[$relative_size];
+
+		for my $weight qw(normal bold)
+			{
+			for my $slant qw(roman italic)
+				{
+				for my $under qw (yesunder nounder)
+					{
+					my $underval = ($under eq 'yesunder') ? 1 : 0;
+					$pod->tagConfigure 
+						(
+						$family.$relative_size.$weight.$slant.$under,
+						-font =>
+							[
+							-family=>$family,
+							-size  =>$font_size,
+							-weight=>$weight,
+							-slant =>$slant,
+							],
+						-underline => $underval,
+						);
+					}
+				}
+			}
+		}
+	}
+
+}
+
 sub Populate
 {
 	my($self, $args)=@_;
@@ -519,6 +606,8 @@ sub Populate
 
 	my $toc = $self->ROText
 			->pack(-side=> 'left',-fill=>'both');
+	
+	$toc->configure(-wrap=>'none');
 
 	my $adj = $self->Adjuster(-widget=>$toc, -side=>'left')
 			->pack(-side=>'left',-fill=>'y');
@@ -533,53 +622,7 @@ sub Populate
 
 	$self->Delegates  ('podview'=>$self);
 
-	my $w=$pod;
-
- 	for(my $i=0; $i<100; $i++)
-		{
-		 $w->tagConfigure
-			(
-				'Column'.$i,
-	 			-lmargin1 => $i*8,
-				-lmargin2 => $i*8,
-			);
-		}
-
-	# family    =>  garamond, courier
-	# size 	    =>  10, 12, 16, 18, 24
-	# weight    =>  normal, bold
-	# slant     =>  roman, italic
-	# underline =>  yesunder, nounder
-
-for my $family qw(lucida courier)
-	{
-	for my $size qw (6 8 10 12 14 16 18 20 22 24)
-		{
-		for my $weight qw(normal bold)
-			{
-			for my $slant qw(roman italic)
-				{
-				for my $under qw (yesunder nounder)
-					{
-					my $underval = ($under eq 'yesunder') ? 1 : 0;
-					$w->tagConfigure 
-						(
-						$family.$size.$weight.$slant.$under,
-						-font =>
-							[
-							-family=>$family,
-							-size  =>$size,
-							-weight=>$weight,
-							-slant =>$slant,
-							],
-						-underline => $underval,
-						);
-					}
-				}
-			}
-		}
-	}
-
+	set_font_tags($pod);
 
 	my $parser = Tk::Peapod::Parser->new();
 	$self->{_parser}= $parser;
@@ -588,7 +631,7 @@ for my $family qw(lucida courier)
 	$parser->{_toc_widget}=$toc;
 	
 
-	$w->configure(-cursor=>$parser->{_text_cursor});
+	$pod->configure(-cursor=>$parser->{_text_cursor});
 
 }
 
@@ -615,7 +658,8 @@ sub by_line_number
 
 sub DumpMarks
 {
-	my ($widget)=@_;
+	my ($bigwidget)=@_;
+	my $widget = $bigwidget->Subwidget('pod');
 
 	my @marknames = $widget->markNames;
 
@@ -643,7 +687,8 @@ sub DumpMarks
 
 sub DumpTags
 {
-	my ($widget)=@_;
+	my ($bigwidget)=@_;
+	my $widget = $bigwidget->Subwidget('pod');
 
 	my @tagname = $widget->tagNames;
 
@@ -665,7 +710,8 @@ sub DumpTags
 
 sub DumpCursor
 {
-	my ($widget)=@_;
+	my ($bigwidget)=@_;
+	my $widget = $bigwidget->Subwidget('pod');
 
 	my @tagname = $widget->tagNames('insert');
 	print "\n\n";
