@@ -35,16 +35,6 @@ my %start_new_line_for_element =
 	'C' => 0,	# code
 
 	'L' => 0,	# hyperlink
-
-# hyperlinks can have 1 of 3 formats
-# L<name> where name is another module, L<Net::Ping>
-# L<name/sec> or L<name/"sec"> where sec refers to 
-#		a section in the named module
-# 		L<perlsyn/"For Loops">
-# L</sec> a link to a section in this current manual
-
-	
-
 	);
 
 #######################################################################
@@ -309,7 +299,8 @@ sub get_text_between_start_end_markers
 	$start_marker=~s{^end}{start};
 
 	my $start_index = $w->index($start_marker);
-	my $end_index = $w->index($end_marker.'-1 char');
+	# my $end_index = $w->index($end_marker.'-1 char');
+	my $end_index = $w->index($end_marker);
 
 	my $text = $w->get($start_index,$end_index);
 
@@ -418,7 +409,9 @@ sub end_head
 	my $level=$_[0]->{'_head_index'};
 	my ($start,$end,$text) = 
 		$parser->get_text_between_start_end_markers(@_);
+	chop($text);
 	my $header_marker_name = $marker_prefix.$text;
+
 	$parser->{_pod_widget}->markSet($header_marker_name,$start);
 
 	my $index = add_to_table_of_contents($parser, $text,$header_marker_name,$level);
@@ -428,6 +421,7 @@ sub end_head
 
 	my $toc_indent = '  'x$level;
 	my $toc_string = $toc_indent.$index.$text;
+	chomp($toc_string);
 
 	my $toc_tag = $header_marker_name;
 
@@ -440,13 +434,42 @@ sub end_head
 
 }
 
+
+my $most_recent_link;
+
+sub start_L
+{
+	my $parser=shift(@_);
+	my $attrs = shift(@_);
+	my %attributes = %$attrs;
+	my $new_attrs = \%attributes;
+	$most_recent_link = $new_attrs;
+}
+
 #######################################################################
 sub end_L
 #######################################################################
+# hyperlinks can have 1 of 3 formats
+# L<name> where name is another module, L<Net::Ping>
+# L<name/sec> or L<name/"sec"> where sec refers to 
+#		a section in the named module
+# 		L<perlsyn/"For Loops">
+# L</sec> a link to a section in this current manual
+#######################################################################
+
 {
 	my $parser=shift(@_);
+	my $attrs=shift(@_);
+
+	my $link_type = 
+		  (exists($most_recent_link->{to}))      ? 'to'
+		: (exists($most_recent_link->{section})) ? 'section'
+		: 'ERROR';
+
+	die "Unknown link type ".(Dumper $most_recent_link) if($link_type eq 'ERROR');
+
 	my ($start,$end,$text) = 
-		$parser->get_text_between_start_end_markers(@_);
+		$parser->get_text_between_start_end_markers($attrs);
 
 	$text=~s{^\"}{};
 	$text=~s{\"$}{};
@@ -457,13 +480,14 @@ sub end_L
 	my $w=$parser->{_pod_widget};
 	$w->tagAdd($tag_name, $start, $end);
 	$w->tagConfigure($tag_name, -foreground=>'blue');
-	$w->tagBind     ($tag_name, '<Button-1>',
-		sub{
-			eval{
-				$w->see($w->index($link_marker_name));
-			};
-		} 
-	);
+
+	my $sub_lut = 
+		{
+		section => sub{eval{$w->see($w->index($link_marker_name));};},
+		to => sub{eval{system("$0 $text");};},
+		};
+
+	$w->tagBind     ($tag_name, '<Button-1>', $sub_lut->{$link_type});
 
 	$w->tagBind($tag_name, '<Enter>',
 		sub{ $w->configure(-cursor=> $parser->{_link_cursor}); } );
@@ -495,7 +519,7 @@ require 5.005_62;
 use strict;
 use warnings;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Data::Dumper;
 
@@ -620,6 +644,10 @@ sub Populate
 	
 
 	$pod->configure(-cursor=>$parser->{_text_cursor});
+
+	$pod->bind('<F1>', sub{$self->DumpMarks}); 
+	$pod->bind('<F2>', sub{$self->DumpTags}); 
+	$pod->bind('<F3>', sub{$self->DumpCursor}); 
 
 }
 

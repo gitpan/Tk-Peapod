@@ -28,3 +28,11 @@ Revision history for Perl extension Tk::Peapod.
 	- viewing of POD.
 	- added a binding in TOC so that clicking on an entry in TOC
 	- takes you to that entry in the POD.
+
+0.06	- rearrange relative font sizes to match headN numbers
+	- font '1' corresponds with =head1, which makes it the largest font.
+	- catch errors when clicking on a link to a non-existent marker.
+
+0.07	- Fixed a problem getting text between markers. 
+	- Was dropping the last character, which made links difficult...
+	- start differentiating between link to internal section and external POD
